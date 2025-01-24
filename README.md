@@ -100,4 +100,5 @@ _**Step 4.**_
 In this step we will create a eks cluster using eksctl command line and fargate
  
 Creating cluster in EKS using eksctl :
+
 **eksctl create cluster --name monitoring-cluster --region us-east-1 --fargate**
