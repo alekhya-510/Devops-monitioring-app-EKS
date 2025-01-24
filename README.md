@@ -102,3 +102,10 @@ In this step we will create a eks cluster using eksctl command line and fargate
 Creating cluster in EKS using eksctl :
 
 **eksctl create cluster --name monitoring-cluster --region us-east-1 --fargate**
+
+Downloading configuaration file :
+
+**aws eks update-kubeconfig --name monitoring-cluster --region us-east-1**
+
+Creating fargate profiles :
+eksctl create fargateprofile --cluster monitoring-cluster --name monitoring-app --namespace monitoring
