@@ -85,4 +85,19 @@ Through aws-cli we can create AWS ECR as below :
 
  aws ecr create-repository  --repository-name monitoring-eks  --region us-east-1 
 
-   
+Once ECR created we need to authenicate from aws-cli as below :
+
+**aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <repositoryUri>**
+
+After successful authentication we need to tag with repository-uri 
+**docker tag image:tag <repositoryUri>/image:tag**
+
+The push the image to AWS repository :
+**docker push <repositoryUri>/image:tag**
+
+_**Step 4.**_
+ 
+In this step we will create a eks cluster using eksctl command line and fargate
+ 
+Creating cluster in EKS using eksctl :
+**eksctl create cluster --name monitoring-cluster --region us-east-1 --fargate**
