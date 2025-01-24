@@ -108,4 +108,52 @@ Downloading configuaration file :
 **aws eks update-kubeconfig --name monitoring-cluster --region us-east-1**
 
 Creating fargate profiles :
-eksctl create fargateprofile --cluster monitoring-cluster --name monitoring-app --namespace monitoring
+**eksctl create fargateprofile --cluster monitoring-cluster --name monitoring-app --namespace monitoring**
+
+Deplyong through manifest file :
+
+```
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: monitoring
+  name: monitoring-deploy
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring
+  template:
+    metadata:
+      labels:
+        app: monitoring
+    spec:
+      containers:
+      - image: 713881788228.dkr.ecr.us-east-1.amazonaws.com/monitoring-eks:latest
+        name: monitoring-eks
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: monitoring
+  name: monitoring-deploy
+  namespace: monitoring
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: monitoring
+  type: NodePort
+```
