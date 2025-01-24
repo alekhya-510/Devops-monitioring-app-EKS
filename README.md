@@ -60,4 +60,27 @@ EXPOSE 5000
 CMD ["flask", "run"]
 
 ```
+
+we need to build the above dockerfile to create a docker image as below 
+
+**docker build -t flask-app .**
+
+we can create container from the image as below 
+
+**docker run -p 5000:5000 <image-id>**
+
+we can able to access the monitoring application from local machine http://localhost:5000 
+
+
+<img width="1728" alt="Screenshot 2025-01-24 at 10 22 21" src="https://github.com/user-attachments/assets/4e72c106-4783-4997-84d0-7ba841d793ff" />
+
+
+**_Step 3._**
+
+Pushing the docker image to container registry , in this case we have chosen Amazon Container Registry and for that we need to create container registry.
+
+**Creation of Amazon container Registry :**
+
+
+
    
