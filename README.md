@@ -157,3 +157,32 @@ spec:
     app: monitoring
   type: NodePort
 ```
+this deployment need to be deployed as 
+kubectl apply -f deployment.yaml
+
+_**Step 5.**_
+
+creating IAM role and policy and attaching the same to the cluster
+downloading the policy.json:
+```
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
+```
+creating IAM policy :
+```
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam_policy.json
+```
+```
+eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=monitoring-cluster --approve
+```
+
+```
+eksctl create iamserviceaccount \
+  --cluster=monitoring-cluster \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --attach-policy-arn=arn:aws:iam::713881788228:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+```
