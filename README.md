@@ -81,6 +81,8 @@ Pushing the docker image to container registry , in this case we have chosen Ama
 
 **Creation of Amazon container Registry :**
 
+Through aws-cli we can create AWS ECR as below :
 
+ aws ecr create-repository  --repository-name monitoring-eks  --region us-east-1 
 
    
