@@ -164,15 +164,7 @@ _**Step 5.**_
 
 creating IAM role and policy and attaching the same to the cluster
 downloading the policy.json:
-```
-curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
-```
-creating IAM policy :
-```
-aws iam create-policy \
-    --policy-name AWSLoadBalancerControllerIAMPolicy \
-    --policy-document file://iam_policy.json
-```
+
 ```
 eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=monitoring-cluster --approve
 ```
@@ -186,3 +178,89 @@ eksctl create iamserviceaccount \
   --attach-policy-arn=arn:aws:iam::713881788228:policy/AWSLoadBalancerControllerIAMPolicy \
   --approve
 ```
+```
+curl -O https://raw.githubusercontent.com/aws-samples/amazon-eks-fluent-logging-examples/mainline/examples/fargate/cloudwatchlogs/permissions.json
+```
+aws iam create-policy --policy-name eks-fargate-logging-policy --policy-document file://permissions.json
+aws iam attach-role-policy \
+  --policy-arn arn:aws:iam::713881788228:policy/eks-fargate-logging-policy \
+  --role-name AmazonEKSFargatePodExecutionRole
+
+pod-execution-role-trust-policy.json
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Condition": {
+         "ArnLike": {
+            "aws:SourceArn": "arn:aws:eks:us-east-1:713881788228:fargateprofile/monitoring-cluster/*"
+         }
+      },
+      "Principal": {
+        "Service": "eks-fargate-pods.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+
+
+aws iam create-role \
+  --role-name AmazonEKSFargatePodExecutionRole \
+  --assume-role-policy-document file://"pod-execution-role-trust-policy.json"
+
+aws iam attach-role-policy \
+  --policy-arn arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy \
+  --role-name AmazonEKSFargatePodExecutionRole  
+
+Step 6.
+
+Creating configmaps
+1.creating namespace
+   **aws-observability-namespace.yaml**
+   kind: Namespace
+   apiVersion: v1
+   metadata:
+     name: aws-observability
+     labels:
+       aws-observability: enabled
+**aws-logging-cloudwatch-configmap.yaml**
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: aws-logging
+  namespace: aws-observability
+data:
+  flb_log_cw: "false"  # Set to true to ship Fluent Bit process logs to CloudWatch.
+  filters.conf: |
+    [FILTER]
+        Name parser
+        Match *
+        Key_name log
+        Parser crio
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log On
+        Keep_Log Off
+        Buffer_Size 0
+        Kube_Meta_Cache_TTL 300s
+  output.conf: |
+    [OUTPUT]
+        Name cloudwatch_logs
+        Match   kube.*
+        region us-east-1
+        log_group_name my-logs
+        log_stream_prefix from-fluent-bit-
+        log_retention_days 60
+        auto_create_group true
+  parsers.conf: |
+    [PARSER]
+        Name crio
+        Format Regex
+        Regex ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>P|F) (?<log>.*)$
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+  
