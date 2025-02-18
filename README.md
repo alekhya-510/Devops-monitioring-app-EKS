@@ -227,6 +227,7 @@ Creating configmaps
      labels:
        aws-observability: enabled
 **aws-logging-cloudwatch-configmap.yaml**
+```
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -264,5 +265,5 @@ data:
         Time_Key    time
         Time_Format %Y-%m-%dT%H:%M:%S.%L%z
 
-     ```   
+     ```
   
